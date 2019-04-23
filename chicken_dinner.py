@@ -3,20 +3,23 @@
 #!TODO: Add more options to "list" command
 
 import json, discord
+from discord.ext.commands import Bot
 
 # Update game wins. Saves data to file, then revamps its own data
-def update_data(winner_list=winner_list):
+def update_data(winner_list_local={}):
     # If we already have data, save it. Then grab it and return winner_list
     # Automatically imports as a dictionary
-    if winner_list:
+    if winner_list_local:
         with open("game_wins.json", 'w', encoding='utf-8') as win_data:
             json.dump(win_data)
     with open("game_wins.json", 'r', encoding='utf-8') as win_data:
-        winner_list = json.load(win_data)
-    return winner_list
+        winner_list_local = json.load(win_data)
+    return winner_list_local
 
 #====================================================
 #====================================================
+# Define bot. All bot commands begin with "!"
+win_bot = Bot(command_prefix = "!")
 # When bot connects, prints logging info to stdout and announces herself in chat
 @win_bot.event
 async def on_ready():
@@ -32,7 +35,7 @@ async def add_game(ctx):
     _bg, *game_name = message.split(' ')
     game_name = ' '.join(game_name).title()
     winner_list[game_name] = {}
-    winner_list = update_data()
+    winner_list = update_data(winner_list)
     return await win_bot.say(f"{game_name} has been added to the game list!")
 
 
@@ -77,7 +80,7 @@ async def add_win(ctx):
 
     # Update win counts in the dictionary, then dump data to file
     winner_list[game_name][player_id] += 1
-    winner_list = update_data()
+    winner_list = update_data(winner_list)
 
     return await win_bot.say(f"{player_id} has won {game_name}!")
 
@@ -85,10 +88,8 @@ async def add_win(ctx):
 #====================================================
 def main():
     winner_list = update_data()
-    # Define bot. All bot commands begin with "!"
-    win_bot = discord.ext.commands.Bot(command_prefix = "!")
     # Get your own token, nerd
     win_bot.run(token)
 
-if __name__ = "__main__":
+if __name__ == "__main__":
     main()
